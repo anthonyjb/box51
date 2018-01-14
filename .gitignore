@@ -1,0 +1,19 @@
+# general things to ignore
+build/
+bin/
+lib/
+share/
+dist/
+.tox/
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
+pyvenv.cfg
+.pypirc
+
+# due to using tox and pytest
+.tox
+.cache
