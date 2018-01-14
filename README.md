@@ -27,7 +27,7 @@ Modify you application config as follows:
             'asset_root': '/path/to/assets',
             'cache': SimpleCache()
         }
-        ASSET_BACKEND_ROOT = '/assets'
+        ASSET_BACKEND_ROOT = 'http://mysite.com/assets'
 
 
 Limitations

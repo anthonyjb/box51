@@ -1,4 +1,4 @@
-
+import io
 import os
 
 from PIL import Image
@@ -6,6 +6,19 @@ from PIL.ExifTags import TAGS
 import shortuuid
 from slugify import Slugify
 
+__all__ = [
+    'Box51',
+    'Box51Exception'
+]
+
+
+# Exceptions
+
+class Box51Exception(Exception):
+    """An exception performing an action against an asset"""
+
+
+# API
 
 class Box51:
     """
@@ -30,9 +43,9 @@ class Box51:
     }
 
     # The name of the folder in which temporary files are stored
-    TMP_FOLDER = 'tmp'
+    TMP_DIR = 'tmp'
 
-    def __init__(asset_root):
+    def __init__(self, asset_root):
 
         # Path to the directory where assets will be stored
         self.asset_root = asset_root
@@ -46,20 +59,20 @@ class Box51:
     def generate_variations(self, store_key, variations):
         """Generate one or more variations for an image asset"""
 
+        abs_path = self.asset_root
+        abs_path_tmp = os.path.join(self.asset_root, self.TMP_DIR)
+
         # Extract the extension from the store key to create a base key
         base_key = os.path.splitext(store_key)[0]
 
         # Get the path to the asset
-        abs_path, temporary = self._get(store_key)
-
-        # Retrieve the assets contents
-        file = self.retrieve(store_key)
+        file_path, temporary = self._get(store_key)
 
         # Generate the variations
-        im = Image.open(file)
+        im = Image.open(file_path)
 
         new_variations = {}
-        for name, ops in variations:
+        for name, ops in variations.items():
 
             # Transform the image based on the variation
             vim, fmt = self._transform_image(im, ops)
@@ -88,10 +101,12 @@ class Box51:
                 # Write the asset to disk
                 path = abs_path_tmp if temporary else abs_path
                 with open(os.path.join(path, var_key), 'wb') as store:
-                    store.write(f.read())
+                    store.write(file.read())
+
+                break
 
             # Build the variation data
-            variation = {
+            new_variations[name] = {
                 'name': name,
                 'store_key': var_key,
                 'ext': fmt['ext'],
@@ -115,7 +130,7 @@ class Box51:
             return
 
         # Move the temporary version of the file and any variations
-        abs_path_tmp = os.path.join(self.asset_root, self.TMP_FOLDER)
+        abs_path_tmp = os.path.join(self.asset_root, self.TMP_DIR)
 
         # Extract the extension from the store key to create a base key
         base_key = os.path.splitext(store_key)[0]
@@ -185,10 +200,11 @@ class Box51:
 
         # Determine the storage location
         abs_path = self.asset_root
-        abs_path_tmp = os.path.join(self.asset_root, self.TMP_FOLDER)
+        abs_path_tmp = os.path.join(self.asset_root, self.TMP_DIR)
 
         # Ensure the location exists
         os.makedirs(abs_path, exist_ok=True)
+        os.makedirs(abs_path_tmp, exist_ok=True)
 
         # Save the asset
         store_key = None
@@ -209,7 +225,9 @@ class Box51:
             # Write the asset to disk
             path = abs_path_tmp if temporary else abs_path
             with open(os.path.join(path, store_key), 'wb') as store:
-                store.write(f.read())
+                store.write(asset_file.read())
+
+            break
 
         return {
             'ext': ext,
@@ -234,11 +252,11 @@ class Box51:
         temporary = False
 
         # Check the asset root
-        if os.path.exists(os.path.join(abs_path, store_key)):
-            return os.path.join(abs_path, store_key), False
+        if os.path.exists(os.path.join(self.asset_root, store_key)):
+            return os.path.join(self.asset_root, store_key), False
 
         # Check temporary folder
-        abs_path_tmp = os.path.join(self.asset_root, self.TMP_FOLDER)
+        abs_path_tmp = os.path.join(self.asset_root, self.TMP_DIR)
         if os.path.exists(os.path.join(abs_path_tmp, store_key)):
             return os.path.join(abs_path_tmp, store_key), True
 
@@ -248,7 +266,7 @@ class Box51:
     def _get_file_length(cls, file):
         """Return the length of a file"""
         file.seek(0, os.SEEK_END)
-        length = f.tell()
+        length = file.tell()
         file.seek(0)
         return length
 
@@ -260,7 +278,7 @@ class Box51:
         return 'file'
 
     @classmethod
-    def _generate_uid(length):
+    def _generate_uid(cls, length):
         """Generate a uid of the given length"""
         su = shortuuid.ShortUUID(
             alphabet='abcdefghijklmnopqrstuvwxyz0123456789'
@@ -327,7 +345,7 @@ class Box51:
         return file, meta
 
     @classmethod
-    def _transform_image(im, ops):
+    def _transform_image(cls, im, ops):
         """
         Perform a list of operations against an image and return the resulting
         image.
