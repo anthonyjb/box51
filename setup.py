@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage (@@ add github url once public)
-    url='git@github.com:anthonyjb/box51.git',
+    url='https://github.com/anthonyjb/box51',
 
     # Author details
     author='Anthony Blackshaw',
