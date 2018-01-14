@@ -24,7 +24,13 @@ Modify you application config as follows:
         # Assets
         ASSET_BACKEND = box51
         ASSET_BACKEND_SETTINGS = {
-            'asset_dir': '/path/to/assets',
+            'asset_root': '/path/to/assets',
             'cache': SimpleCache()
         }
         ASSET_BACKEND_ROOT = '/assets'
+
+
+Limitations
+-----------
+
+- Box51 does not support the facial recognition feature provided by Hangar51.
