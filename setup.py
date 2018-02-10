@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage (@@ add github url once public)
-    url='git@github.com:anthonyjb/box51.git',
+    url='https://github.com/anthonyjb/box51',
 
     # Author details
     author='Anthony Blackshaw',
@@ -73,8 +73,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages('box51'),
-    package_dir={'': 'box51'},
+    packages=['box51'],
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
