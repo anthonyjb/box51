@@ -120,7 +120,7 @@ class Box51:
         # Extract the extension from the store key to create a base key
         base_key = os.path.splitext(store_key)[0]
 
-        # Move the asset and any variations from the temporaru folder to the
+        # Move the asset and any variations from the temporary folder to the
         # asset root.
         for filename in os.listdir(abs_path_tmp):
             if filename.startswith(base_key):
@@ -128,6 +128,8 @@ class Box51:
                     os.path.join(abs_path_tmp, filename),
                     os.path.join(abs_path, filename)
                 )
+
+        return os.path.join(abs_path, filename)
 
     def remove(self, store_key):
         """Remove an asset"""
