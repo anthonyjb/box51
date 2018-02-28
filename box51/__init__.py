@@ -74,8 +74,16 @@ class Box51:
         new_variations = {}
         for name, ops in variations.items():
 
+            # We copy non-animated images and reload animated images (as
+            # copying them removes all but the first frame).
+            vim = None
+            if im.format.lower() in ['gif', 'webp'] and im.is_animated:
+                vim = Image.open(file_path)
+            else:
+                vim = im.copy()
+
             # Transform the image based on the variation
-            vim, fmt = self._transform_image(im, ops)
+            vim, fmt = self._transform_image(vim, ops)
 
             # Convert the image to a stream for saving
             file = io.BytesIO()
@@ -135,24 +143,14 @@ class Box51:
         # Extract the extension from the store key to create a base key
         base_key = os.path.splitext(store_key)[0]
 
-        # Move the asset and any variations from the temporary folder to the
-        # asset root and build a map of the change in filenames from temporary
-        # to permenant.
-        filename_remap = {}
+        # Move the asset and any variations from the temporaru folder to the
+        # asset root.
         for filename in os.listdir(abs_path_tmp):
             if filename.startswith(base_key):
-
-                # Store the key change
-                tmp_key = os.path.join(self.TMP_DIR, filename)
-                filename_remap[tmp_key] = filename
-
-                # Move the file
                 os.rename(
                     os.path.join(abs_path_tmp, filename),
                     os.path.join(abs_path, filename)
                 )
-
-        return filename_remap
 
     def remove(self, store_key):
         """Remove an asset"""
@@ -338,10 +336,15 @@ class Box51:
                 im = im.transpose(Image.ROTATE_90)
 
         # Strip meta data from file
-        file = io.BytesIO()
-        im_no_exif = Image.new(im.mode, im.size)
-        im_no_exif.putdata(list(im.getdata()))
-        im_no_exif.save(file, format=fmt)
+        im_no_exif = None
+        if im.format == 'GIF':
+            im_no_exif = im
+        else:
+            file = io.BytesIO()
+            im_no_exif = Image.new(im.mode, im.size)
+            im_no_exif.putdata(list(im.getdata()))
+            im_no_exif.save(file, format=fmt)
+
         file.seek(0)
 
         # Build base meta information for the image
@@ -361,9 +364,6 @@ class Box51:
         image.
         """
 
-        # Copy the image so we don't transform the original
-        im = im.copy()
-
         # Perform the operations
         fmt = {'format': 'jpeg', 'ext': 'jpg'}
         for op in ops:
@@ -375,7 +375,7 @@ class Box51:
                     int(op[1][0] * im.size[1]), # Top
                     int(op[1][1] * im.size[0]), # Right
                     int(op[1][2] * im.size[1])  # Bottom
-                    ])
+                ])
 
             # Fit
             elif op[0] == 'fit':
@@ -406,20 +406,25 @@ class Box51:
                 if fmt['format'] in ['jpeg', 'png']:
                     fmt['optimize'] = True
 
-                # Variations are output in web safe colour modes, if the
-                # original image isn't using a web safe colour mode supported by
-                # the output format it will be converted to one.
-                if fmt['format'] == 'gif' and im.mode != 'P':
-                    im = im.convert('P')
+                # Allow gifs to store multiple frames
+                if fmt['format'] in ['gif', 'webp']:
+                    fmt['save_all'] = True
+                    fmt['optimize'] = True
 
-                elif fmt['format'] == 'jpeg' and im.mode != 'RGB':
-                    im = im.convert('RGB')
+        # Variations are output in web safe colour modes, if the
+        # original image isn't using a web safe colour mode supported by
+        # the output format it will be converted to one.
+        if fmt['format'] == 'gif' and im.mode != 'P':
+            im = im.convert('P')
 
-                elif fmt['format'] == 'png' \
-                        and im.mode not in ['P', 'RGB', 'RGBA']:
-                    im = im.convert('RGB')
+        elif fmt['format'] == 'jpeg' and im.mode != 'RGB':
+            im = im.convert('RGB')
 
-                elif fmt['format'] == 'webp' and im.mode != 'RGBA':
-                    im = im.convert('RGBA')
+        elif fmt['format'] == 'png' \
+                and im.mode not in ['P', 'RGB', 'RGBA']:
+            im = im.convert('RGB')
+
+        elif fmt['format'] == 'webp' and im.mode != 'RGBA':
+            im = im.convert('RGBA')
 
         return im, fmt
