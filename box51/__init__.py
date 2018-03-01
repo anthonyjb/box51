@@ -74,21 +74,21 @@ class Box51:
         new_variations = {}
         for name, ops in variations.items():
 
-            # We copy non-animated images and reload animated images (as
-            # copying them removes all but the first frame).
             vim = None
-            if im.format.lower() in ['gif', 'webp'] and im.is_animated:
-                vim = Image.open(file_path)
+            if im.format.lower() == 'gif' and im.is_animated:
+                # By-pass transforms for animated gifs
+                file = open(file_path, 'rb')
+                fmt = {'ext': 'gif', 'fmt': 'gif'}
+
             else:
+                # Transform the image based on the variation
                 vim = im.copy()
+                vim, fmt = self._transform_image(vim, ops)
 
-            # Transform the image based on the variation
-            vim, fmt = self._transform_image(vim, ops)
-
-            # Convert the image to a stream for saving
-            file = io.BytesIO()
-            vim.save(file, **fmt)
-            file.seek(0)
+                # Convert the image to a stream for saving
+                file = io.BytesIO()
+                vim.save(file, **fmt)
+                file.seek(0)
 
             # Write the variation to disk
             var_key = None
@@ -121,8 +121,8 @@ class Box51:
                 'meta': {
                     'length': self._get_file_length(file),
                     'image': {
-                        'mode': vim.mode,
-                        'size': vim.size
+                        'mode': (vim or im).mode,
+                        'size': (vim or im).size
                     }
                 }
             }
