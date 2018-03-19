@@ -143,14 +143,24 @@ class Box51:
         # Extract the extension from the store key to create a base key
         base_key = os.path.splitext(store_key)[0]
 
-        # Move the asset and any variations from the temporaru folder to the
-        # asset root.
+        # Move the asset and any variations from the temporary folder to the
+        # asset root and build a map of the change in filenames from temporary
+        # to permenant.
+        filename_remap = {}
         for filename in os.listdir(abs_path_tmp):
             if filename.startswith(base_key):
+
+                # Store the key change
+                tmp_key = os.path.join(self.TMP_DIR, filename)
+                filename_remap[tmp_key] = filename
+
+                # Move the file
                 os.rename(
                     os.path.join(abs_path_tmp, filename),
                     os.path.join(abs_path, filename)
                 )
+
+        return filename_remap
 
     def remove(self, store_key):
         """Remove an asset"""
