@@ -188,31 +188,48 @@ class Box51:
     def store(self, file, name=None, temporary=False):
         """Store an asset"""
 
+        filename = None
+        stream = None
+
+        if hasattr(file, 'filename'):
+            filename = file.filename
+            stream = file.stream
+
+        elif type(file) is tuple:
+            filename, stream = file
+
+        else:
+            filename = name
+            stream = file
+
+        if type(stream) is bytes:
+            stream = io.BytesIO(stream)
+
         # If no name has been provided attempt to extract one from the file
         if not name:
-            name = os.path.splitext(file.filename)[0]
+            name = os.path.splitext(filename)[0]
 
         # Normalize the name
         name = self._slugify(name)
 
         # Get the file's extension
-        ext = os.path.splitext(file.filename)[1].lower()[1:]
+        ext = os.path.splitext(filename)[1].lower()[1:]
 
         # If we weren't able to get file's extension then attempt to guess it
         if not ext:
-            file.stream.seek(0)
-            ext = imghdr.what(file.filename, file.stream.read()) or ''
+            stream.seek(0)
+            ext = imghdr.what(filename, stream.read()) or ''
 
         # Build the meta data for the asset (and strip any meta information
         # from images).
-        asset_file = file.stream
+        asset_file = stream
         asset_meta = {}
         asset_type = self._get_type(ext)
         if asset_type is 'image':
             asset_file, asset_meta = self._prep_image(asset_file)
 
         asset_meta.update({
-            'filename': file.filename,
+            'filename': filename,
             'length': self._get_file_length(asset_file)
         })
 
