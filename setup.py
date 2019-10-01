@@ -27,6 +27,7 @@ setup(
         'to allow local file storage without running an instance of '
         'hangar51.',
     long_description=long_description,
+    long_description_content_type='text/markdown',
 
     # The project's main homepage (@@ add github url once public)
     url='https://github.com/anthonyjb/box51',
