@@ -1,3 +1,4 @@
+import imghdr
 import io
 import os
 
