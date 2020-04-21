@@ -86,7 +86,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'awesome-slugify==1.6.5',
-        'Pillow==5.0.0'
+        'Pillow==6.2.0'
     ],
 
     # List additional groups of dependencies here (e.g. development
