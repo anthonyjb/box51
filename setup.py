@@ -21,7 +21,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.2',
+    version='0.2.0',
 
     description='An image processing library created for manhattan '
         'to allow local file storage without running an instance of '
@@ -85,8 +85,8 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'awesome-slugify==1.6.5',
-        'Pillow==6.2.0'
+        'python-slugify>=4.0.1',
+        'Pillow>=6.2.0'
     ],
 
     # List additional groups of dependencies here (e.g. development

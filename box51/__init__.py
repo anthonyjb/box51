@@ -5,7 +5,7 @@ import os
 from PIL import Image
 from PIL.ExifTags import TAGS
 import shortuuid
-from slugify import Slugify
+from slugify import slugify
 
 __all__ = [
     'Box51',
@@ -50,12 +50,6 @@ class Box51:
 
         # Path to the directory where assets will be stored
         self.asset_root = asset_root
-
-        # Create a slugify function for normalizing file names
-        self._slugify = Slugify()
-        self._slugify.to_lower = True
-        self._slugify.safe_chars = '-'
-        self._slugify.max_length = 200
 
     def generate_variations(self, store_key, variations):
         """Generate one or more variations for an image asset"""
@@ -211,7 +205,7 @@ class Box51:
             name = os.path.splitext(filename)[0]
 
         # Normalize the name
-        name = self._slugify(name)
+        name = slugify(name, max_length=200)
 
         # Get the file's extension
         ext = os.path.splitext(filename)[1].lower()[1:]
