@@ -159,11 +159,10 @@ class Box51:
 
     def remove(self, store_key):
         """Remove an asset"""
-        if os.path.exists(os.path.join(self.asset_root, store_key)):
 
-            # Remove the asset and any variations of it
-            for filename in os.listdir(abs_path_tmp):
-                if filename.startswith(base_key):
+        if os.path.exists(os.path.join(self.asset_root, store_key)):
+            for filename in os.listdir(self.asset_root):
+                if filename.startswith(store_key):
                     os.remove(os.path.join(self.asset_root, filename))
 
     def retrieve(self, store_key):
